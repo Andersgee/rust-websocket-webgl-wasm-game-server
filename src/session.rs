@@ -29,7 +29,8 @@ impl Session {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
                 println!("Websocket Client heartbeat failed, disconnecting!");
-                act.server_addr.do_send(messages::Disconnect { id: act.id });
+                act.server_addr
+                    .do_send(messages::PlayerDisconnectMessage { id: act.id });
                 ctx.stop();
                 return;
             }
@@ -62,7 +63,7 @@ impl Actor for Session {
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
         self.server_addr
-            .do_send(messages::Disconnect { id: self.id });
+            .do_send(messages::PlayerDisconnectMessage { id: self.id });
         Running::Stop
     }
 }
@@ -107,9 +108,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                 let m = text.trim();
                 // check for special commands, else just send text to server to process
                 if m.starts_with('/') {
-                    let v: Vec<&str> = m.splitn(2, ' ').collect();
-                    match v[0] {
+                    let (cmd, arg) = m.split_once(" ").unwrap_or((m, ""));
+                    match cmd {
                         "/list" => {
+                            //list rooms
                             // send() is for when we want to pause processing of new messages until response returned
                             // do_send() is for when we dont care about the response
                             println!("List rooms");
@@ -130,29 +132,28 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                                 .wait(ctx)
                         }
                         "/join" => {
-                            if v.len() == 2 {
-                                self.room = v[1].to_owned();
-                                self.server_addr.do_send(messages::Join {
+                            //join room
+                            if arg != "" {
+                                self.room = arg.to_owned();
+                                self.server_addr.do_send(messages::PlayerJoinRoomMessage {
                                     id: self.id,
                                     name: self.room.clone(),
                                 });
 
-                                ctx.text("joined");
-                            } else {
-                                ctx.text("!!! room name is required");
+                                //ctx.text("joined");
                             }
                         }
                         "/name" => {
-                            if v.len() == 2 {
-                                self.name = Some(v[1].to_owned());
-                            } else {
-                                ctx.text("!!! name is required");
+                            //change name
+                            if arg != "" {
+                                self.name = Some(arg.to_owned());
                             }
                         }
-                        _ => ctx.text(format!("!!! unknown command: {m:?}")),
+                        _ => println!("unknown slash command recieved, cmd: {cmd}, arg: {arg}"),
                     }
                 } else {
-                    self.server_addr.do_send(messages::ClientMessage {
+                    //player input
+                    self.server_addr.do_send(messages::PlayerInputMessage {
                         id: self.id,
                         msg: m.to_owned(),
                         room: self.room.clone(),

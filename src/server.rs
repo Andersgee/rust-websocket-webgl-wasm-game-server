@@ -88,10 +88,10 @@ impl Handler<messages::Connect> for ChatServer {
 }
 
 /// Handler for Disconnect message.
-impl Handler<messages::Disconnect> for ChatServer {
+impl Handler<messages::PlayerDisconnectMessage> for ChatServer {
     type Result = ();
 
-    fn handle(&mut self, msg: messages::Disconnect, _: &mut Context<Self>) {
+    fn handle(&mut self, msg: messages::PlayerDisconnectMessage, _: &mut Context<Self>) {
         println!("Someone disconnected");
 
         let mut rooms: Vec<String> = Vec::new();
@@ -113,10 +113,10 @@ impl Handler<messages::Disconnect> for ChatServer {
 }
 
 /// Handler for Message message.
-impl Handler<messages::ClientMessage> for ChatServer {
+impl Handler<messages::PlayerInputMessage> for ChatServer {
     type Result = ();
 
-    fn handle(&mut self, msg: messages::ClientMessage, _: &mut Context<Self>) {
+    fn handle(&mut self, msg: messages::PlayerInputMessage, _: &mut Context<Self>) {
         self.send_message(&msg.room, msg.msg.as_str(), msg.id);
     }
 }
@@ -138,11 +138,11 @@ impl Handler<ListRooms> for ChatServer {
 
 /// Join room, send disconnect message to old room
 /// send join message to new room
-impl Handler<messages::Join> for ChatServer {
+impl Handler<messages::PlayerJoinRoomMessage> for ChatServer {
     type Result = ();
 
-    fn handle(&mut self, msg: messages::Join, _: &mut Context<Self>) {
-        let messages::Join { id, name } = msg;
+    fn handle(&mut self, msg: messages::PlayerJoinRoomMessage, _: &mut Context<Self>) {
+        let messages::PlayerJoinRoomMessage { id, name } = msg;
         let mut rooms = Vec::new();
 
         // remove session from all rooms
