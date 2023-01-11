@@ -67,6 +67,26 @@ pub fn vec2_rotate_around_origin(out: &mut Vec2, rad: f32) -> Vec2 {
     *out
 }
 
+pub fn quat_from_euler_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
+    let half_to_rad = 0.5;
+
+    let x = x * half_to_rad;
+    let y = y * half_to_rad;
+    let z = z * half_to_rad;
+
+    let sx = f32::sin(x);
+    let cx = f32::cos(x);
+    let sy = f32::sin(y);
+    let cy = f32::cos(y);
+    let sz = f32::sin(z);
+    let cz = f32::cos(z);
+
+    out[0] = sx * cy * cz - cx * sy * sz;
+    out[1] = cx * sy * cz + sx * cy * sz;
+    out[2] = cx * cy * sz - sx * sy * cz;
+    out[3] = cx * cy * cz + sx * sy * sz;
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Player {
     attributes: Attributes,
@@ -78,11 +98,17 @@ pub struct Player {
 impl Player {
     pub fn new() -> Self {
         Self {
-            transform: Transform::new(),
-            renderable: Renderable::new(Vao::Guy),
             player_input: PlayerInput::new(),
             attributes: Attributes { move_speed: 2.4 },
+            transform: Transform::new(),
+            renderable: Renderable::new(Vao::Guy),
         }
+    }
+
+    /// apply self.player_input all the way to self.renderable
+    pub fn apply(&mut self) {
+        self.transform.apply(&self.player_input, &self.attributes);
+        self.renderable.apply(&self.transform);
     }
 }
 
@@ -114,8 +140,7 @@ impl Transform {
 
 impl Transform {
     /// update velocity and position
-    pub fn apply(&mut self, player: &Player) {
-        let player_input = player.player_input;
+    pub fn apply(&mut self, player_input: &PlayerInput, attributes: &Attributes) {
         let mut v = vec2::create();
         let right = [1.0, 0.0];
         let left = [-1.0, 0.0];
@@ -136,10 +161,13 @@ impl Transform {
 
         vec2_rotate_around_origin(&mut v, player_input.facing_rad);
         vec2_normalize(&mut v);
-        vec2_scale(&mut v, player.attributes.move_speed);
+        vec2_scale(&mut v, attributes.move_speed);
 
+        //update pos
         self.pos[0] += v[0];
         self.pos[1] += v[1];
+        //update quat
+        quat_from_euler_rad(&mut self.quat, 0.0, 0.0, player_input.facing_rad);
     }
 }
 
