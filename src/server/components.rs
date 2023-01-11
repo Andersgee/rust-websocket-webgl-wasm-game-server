@@ -99,7 +99,7 @@ impl Player {
     pub fn new() -> Self {
         Self {
             player_input: PlayerInput::new(),
-            attributes: Attributes { move_speed: 2.4 },
+            attributes: Attributes { move_speed: 0.05 },
             transform: Transform::new(),
             renderable: Renderable::new(Vao::Guy),
         }
