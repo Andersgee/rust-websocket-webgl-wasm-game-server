@@ -1,8 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Player {
-    x: u32,
-    y: u32,
-    anim_frame: u32,
+pub enum Vao {
+    Guy,
+    Floor,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Renderable {
+    pub vao: Vao,
+    pub model_mat: f32, //Mat4,
 }
