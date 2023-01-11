@@ -6,12 +6,9 @@ use actix::*;
 use actix_web::{web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web_actors::ws;
 use session::Session;
-use std::{
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-    time::Instant,
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
 };
 
 async fn websocket_route(
@@ -19,17 +16,8 @@ async fn websocket_route(
     stream: web::Payload,
     srv: web::Data<Addr<server::ChatServer>>,
 ) -> Result<HttpResponse, Error> {
-    ws::start(
-        Session {
-            id: 0,
-            hb: Instant::now(),
-            room: "main".to_owned(),
-            name: None,
-            server_addr: srv.get_ref().clone(),
-        },
-        &req,
-        stream,
-    )
+    let server_addr = srv.get_ref().clone();
+    ws::start(Session::new(server_addr), &req, stream)
 }
 
 async fn get_count(count: web::Data<AtomicUsize>) -> impl Responder {

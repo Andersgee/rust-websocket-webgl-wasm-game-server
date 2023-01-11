@@ -16,26 +16,23 @@ pub struct Session {
 }
 
 impl Session {
-    /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
-    ///
-    /// also this method checks heartbeats from client
+    pub fn new(server_addr: Addr<server::ChatServer>) -> Self {
+        Self {
+            id: 0,
+            hb: Instant::now(),
+            room: String::from("main"),
+            name: None,
+            server_addr,
+        }
+    }
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
-            // check client heartbeats
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
-                // heartbeat timed out
                 println!("Websocket Client heartbeat failed, disconnecting!");
-
-                // notify chat server
                 act.server_addr.do_send(messages::Disconnect { id: act.id });
-
-                // stop actor
                 ctx.stop();
-
-                // don't try to send a ping
                 return;
             }
-
             ctx.ping(b"");
         });
     }
