@@ -13,7 +13,7 @@ use std::{
 use self::components::Player;
 mod components;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(1000);
+const TICK_INTERVAL: Duration = Duration::from_millis(17);
 
 #[derive(Debug)]
 pub struct Server {
@@ -60,7 +60,7 @@ impl Server {
     }
 
     fn tick(&mut self) {
-        println!("server tick, sending to all sessions");
+        //println!("server tick, sending to all sessions");
         for (_id, player) in &mut self.players {
             player.apply();
         }
