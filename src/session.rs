@@ -47,7 +47,7 @@ impl Actor for Session {
 
         let addr = ctx.address();
         self.server_addr
-            .send(messages::Connect {
+            .send(messages::PlayerJoinMessage {
                 addr: addr.recipient(),
             })
             .into_actor(self)
@@ -68,10 +68,11 @@ impl Actor for Session {
     }
 }
 
-impl Handler<messages::Message> for Session {
+impl Handler<messages::GameStateMessage> for Session {
     type Result = ();
 
-    fn handle(&mut self, msg: messages::Message, ctx: &mut Self::Context) {
+    fn handle(&mut self, msg: messages::GameStateMessage, ctx: &mut Self::Context) {
+        println!("session id: {}, sending msg: {}", self.id, msg.0);
         ctx.text(msg.0);
     }
 }
@@ -86,7 +87,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
             Ok(msg) => msg,
         };
 
-        println!("WEBSOCKET MESSAGE: {msg:?}");
+        //println!("WEBSOCKET MESSAGE: {msg:?}");
         match msg {
             ws::Message::Ping(msg) => {
                 self.hb = Instant::now();

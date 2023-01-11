@@ -1,5 +1,5 @@
 use crate::messages;
-
+use std::time::{Duration, Instant};
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -11,6 +11,8 @@ use std::{
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
 
+const TICKT_INTERVAL: Duration = Duration::from_millis(1000);
+
 pub struct ListRooms;
 
 impl actix::Message for ListRooms {
@@ -19,7 +21,7 @@ impl actix::Message for ListRooms {
 
 #[derive(Debug)]
 pub struct ChatServer {
-    sessions: HashMap<usize, Recipient<messages::Message>>,
+    sessions: HashMap<usize, Recipient<messages::GameStateMessage>>,
     rooms: HashMap<String, HashSet<usize>>,
     rng: ThreadRng,
     visitor_count: Arc<AtomicUsize>,
@@ -45,25 +47,42 @@ impl ChatServer {
             for id in sessions {
                 if *id != skip_id {
                     if let Some(addr) = self.sessions.get(id) {
-                        addr.do_send(messages::Message(message.to_owned()));
+                        addr.do_send(messages::GameStateMessage(message.to_owned()));
                     }
                 }
             }
         }
     }
+
+    /// send message to all clients
+    fn send_message_to_all(&self, msg: &str) {
+        for recipient in self.sessions.values() {
+            recipient.do_send(messages::GameStateMessage(msg.to_owned()));
+        }
+    }
+
+    fn tick(&self) {
+        println!("server tick, sending to all sessions");
+        self.send_message_to_all("tick")
+    }
+
+    fn start_tick_interval(&self, ctx: &mut Context<Self>) {
+        ctx.run_interval(TICKT_INTERVAL, |act, _ctx| act.tick());
+    }
 }
 
-/// Make actor from `ChatServer`
 impl Actor for ChatServer {
-    /// We are going to use simple Context, we just need ability to communicate
-    /// with other actors.
     type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        self.start_tick_interval(ctx)
+    }
 }
 
-impl Handler<messages::Connect> for ChatServer {
+impl Handler<messages::PlayerJoinMessage> for ChatServer {
     type Result = usize;
 
-    fn handle(&mut self, msg: messages::Connect, _: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: messages::PlayerJoinMessage, _: &mut Context<Self>) -> Self::Result {
         println!("Someone joined");
 
         // notify all users in same room
