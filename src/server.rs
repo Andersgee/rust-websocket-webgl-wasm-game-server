@@ -13,7 +13,8 @@ use std::{
 use self::components::Player;
 mod components;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(17);
+//const TICK_INTERVAL: Duration = Duration::from_millis(17);
+const TICK_INTERVAL: Duration = Duration::from_millis(1000);
 
 #[derive(Debug)]
 pub struct Server {
@@ -82,8 +83,11 @@ impl Server {
     }
 
     fn apply_player_input(&mut self, player_id: usize, player_input: messages::PlayerInput) {
-        let player = self.players.entry(player_id).or_insert(Player::new());
-        player.player_input = player_input;
+        //let player = self.players.entry(player_id).or_insert(Player::new());
+        //player.player_input = player_input;
+        self.players
+            .entry(player_id)
+            .and_modify(|p| p.player_input = player_input);
 
         println!("apply_player_input, player_id: {}", player_id);
     }
