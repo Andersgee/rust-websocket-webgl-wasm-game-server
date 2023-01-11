@@ -125,9 +125,11 @@ impl Handler<messages::PlayerDisconnectMessage> for ChatServer {
             }
         }
         // send message to other users
+        /*
         for room in rooms {
             self.send_message(&room, "Someone disconnected", 0);
         }
+        */
     }
 }
 
