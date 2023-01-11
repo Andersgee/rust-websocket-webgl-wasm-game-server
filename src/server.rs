@@ -81,11 +81,11 @@ impl Server {
         ctx.run_interval(TICK_INTERVAL, |act, _ctx| act.tick());
     }
 
-    fn apply_player_input(&self, player_id: usize, player_input: messages::PlayerInput) {
-        println!(
-            "in game, apply_player_input, id: {}, step_forward: {}",
-            player_id, player_input.step_forward
-        )
+    fn apply_player_input(&mut self, player_id: usize, player_input: messages::PlayerInput) {
+        let player = self.players.entry(player_id).or_insert(Player::new());
+        player.player_input = player_input;
+
+        println!("apply_player_input, player_id: {}", player_id);
     }
 }
 
@@ -113,14 +113,16 @@ impl Handler<messages::PlayerConnectMessage> for Server {
         // register session with random id
         let id = self.rng.gen::<usize>();
         self.sessions.insert(id, msg.addr);
+        self.players.insert(id, Player::new());
+        let _oldcount = self.visitor_count.fetch_add(1, Ordering::SeqCst);
 
+        /*
         // auto join session to main room
         self.rooms
             .entry("main".to_owned())
             .or_insert_with(HashSet::new)
             .insert(id);
-
-        let _count = self.visitor_count.fetch_add(1, Ordering::SeqCst);
+        */
         //self.send_message("main", &format!("Total visitors {count}"), 0);
 
         // send id back
@@ -134,19 +136,22 @@ impl Handler<messages::PlayerDisconnectMessage> for Server {
     fn handle(&mut self, msg: messages::PlayerDisconnectMessage, _: &mut Context<Self>) {
         println!("Someone disconnected");
 
-        let mut rooms: Vec<String> = Vec::new();
+        self.sessions.remove(&msg.id);
+        self.players.remove(&msg.id);
+        let _oldcount = self.visitor_count.fetch_sub(1, Ordering::SeqCst);
 
-        // remove address
+        /*
+        let mut rooms: Vec<String> = Vec::new();
+        // remove session from all rooms
         if self.sessions.remove(&msg.id).is_some() {
-            // remove session from all rooms
             for (name, sessions) in &mut self.rooms {
                 if sessions.remove(&msg.id) {
                     rooms.push(name.to_owned());
                 }
             }
         }
+        */
 
-        let _count = self.visitor_count.fetch_sub(1, Ordering::SeqCst);
         // send message to other users
         /*
         for room in rooms {
@@ -176,26 +181,9 @@ impl Handler<messages::ListRooms> for Server {
 impl Handler<messages::PlayerJoinRoomMessage> for Server {
     type Result = ();
 
-    fn handle(&mut self, msg: messages::PlayerJoinRoomMessage, _: &mut Context<Self>) {
-        let messages::PlayerJoinRoomMessage { id, name } = msg;
-        let mut rooms = Vec::new();
+    fn handle(&mut self, _msg: messages::PlayerJoinRoomMessage, _: &mut Context<Self>) {
+        //let messages::PlayerJoinRoomMessage { id, name } = msg;
 
-        // remove session from all rooms
-        for (n, sessions) in &mut self.rooms {
-            if sessions.remove(&id) {
-                rooms.push(n.to_owned());
-            }
-        }
-        // send message to other users
-        for room in rooms {
-            self.send_message(&room, "Someone disconnected", 0);
-        }
-
-        self.rooms
-            .entry(name.clone())
-            .or_insert_with(HashSet::new)
-            .insert(id);
-
-        self.send_message(&name, "Someone connected", id);
+        //self.send_message(&name, "Someone connected", id);
     }
 }

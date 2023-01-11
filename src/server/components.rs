@@ -92,7 +92,7 @@ pub struct Player {
     attributes: Attributes,
     transform: Transform,
     pub renderable: Renderable,
-    player_input: PlayerInput,
+    pub player_input: PlayerInput,
 }
 
 impl Player {
