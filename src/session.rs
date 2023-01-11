@@ -47,7 +47,7 @@ impl Actor for Session {
 
         let addr = ctx.address();
         self.server_addr
-            .send(messages::PlayerJoinMessage {
+            .send(messages::PlayerConnectMessage {
                 addr: addr.recipient(),
             })
             .into_actor(self)

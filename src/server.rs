@@ -17,7 +17,7 @@ const TICK_INTERVAL: Duration = Duration::from_millis(1000);
 
 #[derive(Debug)]
 pub struct Server {
-    players: Vec<Player>,
+    players: HashMap<usize, Player>,
     sessions: HashMap<usize, Recipient<messages::GameStateMessage>>,
     rooms: HashMap<String, HashSet<usize>>,
     rng: ThreadRng,
@@ -31,7 +31,7 @@ impl Server {
         rooms.insert("main".to_owned(), HashSet::new());
 
         Server {
-            players: vec![],
+            players: HashMap::new(),
             sessions: HashMap::new(),
             rooms,
             rng: rand::thread_rng(),
@@ -61,13 +61,13 @@ impl Server {
 
     fn tick(&mut self) {
         println!("server tick, sending to all sessions");
-        for player in &mut self.players {
+        for (_id, player) in &mut self.players {
             player.apply();
         }
         let renderable = self
             .players
             .iter()
-            .map(|player| player.renderable)
+            .map(|(_id, player)| player.renderable)
             .collect::<Vec<components::Renderable>>();
 
         let serialized = serde_json::to_string(&renderable);
@@ -97,10 +97,14 @@ impl Actor for Server {
     }
 }
 
-impl Handler<messages::PlayerJoinMessage> for Server {
+impl Handler<messages::PlayerConnectMessage> for Server {
     type Result = usize;
 
-    fn handle(&mut self, msg: messages::PlayerJoinMessage, _: &mut Context<Self>) -> Self::Result {
+    fn handle(
+        &mut self,
+        msg: messages::PlayerConnectMessage,
+        _: &mut Context<Self>,
+    ) -> Self::Result {
         println!("Someone joined");
 
         // notify all users in same room
@@ -124,7 +128,6 @@ impl Handler<messages::PlayerJoinMessage> for Server {
     }
 }
 
-/// Handler for Disconnect message.
 impl Handler<messages::PlayerDisconnectMessage> for Server {
     type Result = ();
 

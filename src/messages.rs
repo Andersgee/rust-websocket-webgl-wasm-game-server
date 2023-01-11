@@ -7,7 +7,7 @@ pub struct GameStateMessage(pub String);
 
 #[derive(Message)]
 #[rtype(usize)]
-pub struct PlayerJoinMessage {
+pub struct PlayerConnectMessage {
     pub addr: Recipient<GameStateMessage>,
 }
 
