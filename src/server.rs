@@ -1,7 +1,6 @@
 use crate::messages;
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
-use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use std::{
     collections::{HashMap, HashSet},
@@ -10,16 +9,9 @@ use std::{
         Arc,
     },
 };
+mod components;
 
 const TICKT_INTERVAL: Duration = Duration::from_millis(1000);
-
-#[derive(Serialize, Deserialize, Debug)]
-struct PlayerInput {
-    step_forward: bool,
-    step_backward: bool,
-    step_left: bool,
-    step_right: bool,
-}
 
 #[derive(Debug)]
 pub struct Server {
@@ -72,7 +64,7 @@ impl Server {
         ctx.run_interval(TICKT_INTERVAL, |act, _ctx| act.tick());
     }
 
-    fn apply_player_input(&self, player_id: usize, player_input: PlayerInput) {
+    fn apply_player_input(&self, player_id: usize, player_input: messages::PlayerInput) {
         println!(
             "in game, apply_player_input, id: {}, step_forward: {}",
             player_id, player_input.step_forward
@@ -95,7 +87,7 @@ impl Handler<messages::PlayerJoinMessage> for Server {
         println!("Someone joined");
 
         // notify all users in same room
-        self.send_message("main", "Someone joined", 0);
+        //self.send_message("main", "Someone joined", 0);
 
         // register session with random id
         let id = self.rng.gen::<usize>();
@@ -107,8 +99,8 @@ impl Handler<messages::PlayerJoinMessage> for Server {
             .or_insert_with(HashSet::new)
             .insert(id);
 
-        let count = self.visitor_count.fetch_add(1, Ordering::SeqCst);
-        self.send_message("main", &format!("Total visitors {count}"), 0);
+        let _count = self.visitor_count.fetch_add(1, Ordering::SeqCst);
+        //self.send_message("main", &format!("Total visitors {count}"), 0);
 
         // send id back
         id
@@ -133,6 +125,8 @@ impl Handler<messages::PlayerDisconnectMessage> for Server {
                 }
             }
         }
+
+        let _count = self.visitor_count.fetch_sub(1, Ordering::SeqCst);
         // send message to other users
         /*
         for room in rooms {
@@ -142,16 +136,11 @@ impl Handler<messages::PlayerDisconnectMessage> for Server {
     }
 }
 
-impl Handler<messages::PlayerInputMessage> for Server {
+impl Handler<messages::PlayerInput> for Server {
     type Result = ();
 
-    fn handle(&mut self, msg: messages::PlayerInputMessage, _: &mut Context<Self>) {
-        let res: Result<PlayerInput, serde_json::Error> = serde_json::from_str(&msg.msg);
-        match res {
-            Ok(player_input) => self.apply_player_input(msg.id, player_input),
-            Err(_) => println!("bad player_input parse"),
-        }
-        //self.send_message(&msg.room, msg.msg.as_str(), msg.id);
+    fn handle(&mut self, msg: messages::PlayerInput, _: &mut Context<Self>) {
+        self.apply_player_input(msg.id, msg)
     }
 }
 
@@ -159,13 +148,8 @@ impl Handler<messages::ListRooms> for Server {
     type Result = MessageResult<messages::ListRooms>;
 
     fn handle(&mut self, _: messages::ListRooms, _: &mut Context<Self>) -> Self::Result {
-        let mut rooms = Vec::new();
-
-        for key in self.rooms.keys() {
-            rooms.push(key.to_owned())
-        }
-
-        MessageResult(rooms)
+        let names: Vec<String> = self.rooms.keys().map(|k| k.to_owned()).collect();
+        MessageResult(names)
     }
 }
 

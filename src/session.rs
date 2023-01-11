@@ -9,7 +9,7 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 #[derive(Debug)]
 pub struct Session {
     pub id: usize,
-    pub hb: Instant,
+    pub hb: Instant, //ping-pong heartbeat for timing out clients
     pub room: String,
     pub name: Option<String>,
     pub server_addr: Addr<server::Server>,
@@ -28,7 +28,7 @@ impl Session {
     fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
         ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
-                println!("Websocket Client heartbeat failed, disconnecting!");
+                //println!("Websocket Client heartbeat failed, disconnecting!");
                 act.server_addr
                     .do_send(messages::PlayerDisconnectMessage { id: act.id });
                 ctx.stop();
@@ -72,7 +72,7 @@ impl Handler<messages::GameStateMessage> for Session {
     type Result = ();
 
     fn handle(&mut self, msg: messages::GameStateMessage, ctx: &mut Self::Context) {
-        println!("session id: {}, sending msg: {}", self.id, msg.0);
+        //println!("session id: {}, sending msg: {}", self.id, msg.0);
         ctx.text(msg.0);
     }
 }
@@ -122,10 +122,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                                 .then(|res, _, ctx| {
                                     match res {
                                         Ok(rooms) => {
-                                            //send result to client
-                                            for room in rooms {
-                                                ctx.text(room);
-                                            }
+                                            //send multiple strings to client
+                                            //for room in rooms {
+                                            //  ctx.text(room);
+                                            //}
                                         }
                                         _ => println!("Something is wrong"),
                                     }
@@ -155,12 +155,25 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                         _ => println!("unknown slash command recieved, cmd: {cmd}, arg: {arg}"),
                     }
                 } else {
-                    //player input
-                    self.server_addr.do_send(messages::PlayerInputMessage {
-                        id: self.id,
-                        msg: m.to_owned(),
-                        room: self.room.clone(),
-                    })
+                    let res: Result<messages::PlayerInputWithoutId, serde_json::Error> =
+                        serde_json::from_str(m); //this fails unless sending id...
+                    match res {
+                        Ok(p) => {
+                            //is there a clean way use remaining fields (from a different type)?
+                            let player_input = messages::PlayerInput {
+                                id: self.id,
+                                step_forward: p.step_forward,
+                                step_backward: p.step_backward,
+                                step_left: p.step_left,
+                                step_right: p.step_right,
+                            };
+                            self.server_addr.do_send(player_input);
+                        }
+                        Err(_) => {
+                            println!("bad PlayerInputWithoutId json string: {m}");
+                            //ctx.stop();
+                        }
+                    }
                 }
             }
         }

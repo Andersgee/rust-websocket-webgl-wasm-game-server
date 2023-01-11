@@ -1,4 +1,5 @@
-use actix::prelude::*;
+use actix::prelude::{Message, Recipient};
+use serde::{Deserialize, Serialize};
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -27,14 +28,21 @@ pub struct PlayerJoinRoomMessage {
     pub name: String,
 }
 
-/// Send message to specific room
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct PlayerInputMessage {
+pub struct PlayerInput {
     /// Id of the client session
     pub id: usize,
-    /// Peer message
-    pub msg: String,
-    /// Room name
-    pub room: String,
+    pub step_forward: bool,
+    pub step_backward: bool,
+    pub step_left: bool,
+    pub step_right: bool,
+}
+
+#[derive(Deserialize)]
+pub struct PlayerInputWithoutId {
+    pub step_forward: bool,
+    pub step_backward: bool,
+    pub step_left: bool,
+    pub step_right: bool,
 }
