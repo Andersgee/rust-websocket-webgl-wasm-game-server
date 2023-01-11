@@ -7,15 +7,15 @@ const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(Debug)]
-pub struct WsChatSession {
+pub struct Session {
     pub id: usize,
     pub hb: Instant,
     pub room: String,
     pub name: Option<String>,
-    pub addr: Addr<server::ChatServer>,
+    pub server_addr: Addr<server::ChatServer>,
 }
 
-impl WsChatSession {
+impl Session {
     /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
     ///
     /// also this method checks heartbeats from client
@@ -27,7 +27,7 @@ impl WsChatSession {
                 println!("Websocket Client heartbeat failed, disconnecting!");
 
                 // notify chat server
-                act.addr.do_send(messages::Disconnect { id: act.id });
+                act.server_addr.do_send(messages::Disconnect { id: act.id });
 
                 // stop actor
                 ctx.stop();
@@ -41,14 +41,14 @@ impl WsChatSession {
     }
 }
 
-impl Actor for WsChatSession {
+impl Actor for Session {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
         self.hb(ctx);
 
         let addr = ctx.address();
-        self.addr
+        self.server_addr
             .send(messages::Connect {
                 addr: addr.recipient(),
             })
@@ -64,12 +64,13 @@ impl Actor for WsChatSession {
     }
 
     fn stopping(&mut self, _: &mut Self::Context) -> Running {
-        self.addr.do_send(messages::Disconnect { id: self.id });
+        self.server_addr
+            .do_send(messages::Disconnect { id: self.id });
         Running::Stop
     }
 }
 
-impl Handler<messages::Message> for WsChatSession {
+impl Handler<messages::Message> for Session {
     type Result = ();
 
     fn handle(&mut self, msg: messages::Message, ctx: &mut Self::Context) {
@@ -77,7 +78,7 @@ impl Handler<messages::Message> for WsChatSession {
     }
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         let msg = match msg {
             Err(_) => {
@@ -96,17 +97,28 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
             ws::Message::Pong(_) => {
                 self.hb = Instant::now();
             }
+            ws::Message::Binary(_) => println!("Unexpected binary"),
+            ws::Message::Close(reason) => {
+                ctx.close(reason);
+                ctx.stop();
+            }
+            ws::Message::Continuation(_) => {
+                ctx.stop();
+            }
+            ws::Message::Nop => (),
             ws::Message::Text(text) => {
                 let m = text.trim();
-                // we check for /sss type of messages
+                // check for special commands, else just send text to server to process
                 if m.starts_with('/') {
                     let v: Vec<&str> = m.splitn(2, ' ').collect();
                     match v[0] {
                         "/list" => {
-                            // Send ListRooms message to chat server and wait for
-                            // response
+                            // send() message to chat server
+                            // (and wait for response, meaning this actor will not process
+                            // any more messages until it gets the response)
+                            // do_send() without wait is for when we dont care about the response
                             println!("List rooms");
-                            self.addr
+                            self.server_addr
                                 .send(server::ListRooms)
                                 .into_actor(self)
                                 .then(|res, _, ctx| {
@@ -121,14 +133,11 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
                                     fut::ready(())
                                 })
                                 .wait(ctx)
-                            // .wait(ctx) pauses all events in context,
-                            // so actor wont receive any new messages until it get list
-                            // of rooms back
                         }
                         "/join" => {
                             if v.len() == 2 {
                                 self.room = v[1].to_owned();
-                                self.addr.do_send(messages::Join {
+                                self.server_addr.do_send(messages::Join {
                                     id: self.id,
                                     name: self.room.clone(),
                                 });
@@ -154,22 +163,13 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
                         m.to_owned()
                     };
                     // send message to chat server
-                    self.addr.do_send(messages::ClientMessage {
+                    self.server_addr.do_send(messages::ClientMessage {
                         id: self.id,
                         msg,
                         room: self.room.clone(),
                     })
                 }
             }
-            ws::Message::Binary(_) => println!("Unexpected binary"),
-            ws::Message::Close(reason) => {
-                ctx.close(reason);
-                ctx.stop();
-            }
-            ws::Message::Continuation(_) => {
-                ctx.stop();
-            }
-            ws::Message::Nop => (),
         }
     }
 }

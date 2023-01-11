@@ -11,16 +11,12 @@ use std::{
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
 
-/// List of available rooms
 pub struct ListRooms;
 
 impl actix::Message for ListRooms {
     type Result = Vec<String>;
 }
 
-/// `ChatServer` manages chat rooms and responsible for coordinating chat session.
-///
-/// Implementation is very naïve.
 #[derive(Debug)]
 pub struct ChatServer {
     sessions: HashMap<usize, Recipient<messages::Message>>,
