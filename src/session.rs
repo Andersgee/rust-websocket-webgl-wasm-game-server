@@ -117,11 +117,12 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                             // do_send() is for when we dont care about the response
                             println!("List rooms");
                             self.server_addr
-                                .send(server::ListRooms)
+                                .send(messages::ListRooms)
                                 .into_actor(self)
                                 .then(|res, _, ctx| {
                                     match res {
                                         Ok(rooms) => {
+                                            //send result to client
                                             for room in rooms {
                                                 ctx.text(room);
                                             }
@@ -132,6 +133,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                                 })
                                 .wait(ctx)
                         }
+
                         "/join" => {
                             //join room
                             if arg != "" {

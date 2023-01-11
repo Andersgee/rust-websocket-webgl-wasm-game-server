@@ -1,4 +1,6 @@
 use crate::messages;
+use actix::prelude::*;
+use rand::{self, rngs::ThreadRng, Rng};
 use std::time::{Duration, Instant};
 use std::{
     collections::{HashMap, HashSet},
@@ -8,16 +10,7 @@ use std::{
     },
 };
 
-use actix::prelude::*;
-use rand::{self, rngs::ThreadRng, Rng};
-
 const TICKT_INTERVAL: Duration = Duration::from_millis(1000);
-
-pub struct ListRooms;
-
-impl actix::Message for ListRooms {
-    type Result = Vec<String>;
-}
 
 #[derive(Debug)]
 pub struct ChatServer {
@@ -133,7 +126,6 @@ impl Handler<messages::PlayerDisconnectMessage> for ChatServer {
     }
 }
 
-/// Handler for Message message.
 impl Handler<messages::PlayerInputMessage> for ChatServer {
     type Result = ();
 
@@ -142,11 +134,10 @@ impl Handler<messages::PlayerInputMessage> for ChatServer {
     }
 }
 
-/// Handler for `ListRooms` message.
-impl Handler<ListRooms> for ChatServer {
-    type Result = MessageResult<ListRooms>;
+impl Handler<messages::ListRooms> for ChatServer {
+    type Result = MessageResult<messages::ListRooms>;
 
-    fn handle(&mut self, _: ListRooms, _: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, _: messages::ListRooms, _: &mut Context<Self>) -> Self::Result {
         let mut rooms = Vec::new();
 
         for key in self.rooms.keys() {
@@ -157,8 +148,6 @@ impl Handler<ListRooms> for ChatServer {
     }
 }
 
-/// Join room, send disconnect message to old room
-/// send join message to new room
 impl Handler<messages::PlayerJoinRoomMessage> for ChatServer {
     type Result = ();
 
