@@ -18,10 +18,10 @@ pub struct Session {
 impl Session {
     pub fn new(server_addr: Addr<server::ChatServer>) -> Self {
         Self {
-            id: 0,
+            id: 0, //owerwrite this on actor started
             hb: Instant::now(),
             room: String::from("main"),
-            name: None,
+            name: None, //
             server_addr,
         }
     }
@@ -110,10 +110,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                     let v: Vec<&str> = m.splitn(2, ' ').collect();
                     match v[0] {
                         "/list" => {
-                            // send() message to chat server
-                            // (and wait for response, meaning this actor will not process
-                            // any more messages until it gets the response)
-                            // do_send() without wait is for when we dont care about the response
+                            // send() is for when we want to pause processing of new messages until response returned
+                            // do_send() is for when we dont care about the response
                             println!("List rooms");
                             self.server_addr
                                 .send(server::ListRooms)
@@ -154,15 +152,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                         _ => ctx.text(format!("!!! unknown command: {m:?}")),
                     }
                 } else {
-                    let msg = if let Some(ref name) = self.name {
-                        format!("{name}: {m}")
-                    } else {
-                        m.to_owned()
-                    };
-                    // send message to chat server
                     self.server_addr.do_send(messages::ClientMessage {
                         id: self.id,
-                        msg,
+                        msg: m.to_owned(),
                         room: self.room.clone(),
                     })
                 }
