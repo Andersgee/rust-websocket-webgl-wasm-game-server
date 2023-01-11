@@ -1,6 +1,7 @@
 use crate::messages;
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use std::{
     collections::{HashMap, HashSet},
@@ -11,6 +12,14 @@ use std::{
 };
 
 const TICKT_INTERVAL: Duration = Duration::from_millis(1000);
+
+#[derive(Serialize, Deserialize, Debug)]
+struct PlayerInput {
+    step_forward: bool,
+    step_backward: bool,
+    step_left: bool,
+    step_right: bool,
+}
 
 #[derive(Debug)]
 pub struct Server {
@@ -48,7 +57,7 @@ impl Server {
     }
 
     /// send message to all clients
-    fn send_message_to_all(&self, msg: &str) {
+    fn broadcast(&self, msg: &str) {
         for recipient in self.sessions.values() {
             recipient.do_send(messages::GameStateMessage(msg.to_owned()));
         }
@@ -56,11 +65,18 @@ impl Server {
 
     fn tick(&self) {
         println!("server tick, sending to all sessions");
-        self.send_message_to_all("tick")
+        self.broadcast("tick")
     }
 
     fn start_tick_interval(&self, ctx: &mut Context<Self>) {
         ctx.run_interval(TICKT_INTERVAL, |act, _ctx| act.tick());
+    }
+
+    fn apply_player_input(&self, player_id: usize, player_input: PlayerInput) {
+        println!(
+            "in game, apply_player_input, id: {}, step_forward: {}",
+            player_id, player_input.step_forward
+        )
     }
 }
 
@@ -130,7 +146,12 @@ impl Handler<messages::PlayerInputMessage> for Server {
     type Result = ();
 
     fn handle(&mut self, msg: messages::PlayerInputMessage, _: &mut Context<Self>) {
-        self.send_message(&msg.room, msg.msg.as_str(), msg.id);
+        let res: Result<PlayerInput, serde_json::Error> = serde_json::from_str(&msg.msg);
+        match res {
+            Ok(player_input) => self.apply_player_input(msg.id, player_input),
+            Err(_) => println!("bad player_input parse"),
+        }
+        //self.send_message(&msg.room, msg.msg.as_str(), msg.id);
     }
 }
 
