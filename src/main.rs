@@ -14,7 +14,7 @@ use std::sync::{
 async fn websocket_route(
     req: HttpRequest,
     stream: web::Payload,
-    srv: web::Data<Addr<server::ChatServer>>,
+    srv: web::Data<Addr<server::Server>>,
 ) -> Result<HttpResponse, Error> {
     let server_addr = srv.get_ref().clone();
     ws::start(Session::new(server_addr), &req, stream)
@@ -29,7 +29,7 @@ async fn get_count(count: web::Data<AtomicUsize>) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     println!("main running");
     let app_state = Arc::new(AtomicUsize::new(0));
-    let server_addr = server::ChatServer::new(app_state.clone()).start();
+    let server_addr = server::Server::new(app_state.clone()).start();
 
     HttpServer::new(move || {
         App::new()

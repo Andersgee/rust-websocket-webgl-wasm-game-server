@@ -12,11 +12,11 @@ pub struct Session {
     pub hb: Instant,
     pub room: String,
     pub name: Option<String>,
-    pub server_addr: Addr<server::ChatServer>,
+    pub server_addr: Addr<server::Server>,
 }
 
 impl Session {
-    pub fn new(server_addr: Addr<server::ChatServer>) -> Self {
+    pub fn new(server_addr: Addr<server::Server>) -> Self {
         Self {
             id: 0, //owerwrite this on actor started
             hb: Instant::now(),

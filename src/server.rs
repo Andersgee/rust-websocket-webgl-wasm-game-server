@@ -1,7 +1,7 @@
 use crate::messages;
 use actix::prelude::*;
 use rand::{self, rngs::ThreadRng, Rng};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -13,20 +13,20 @@ use std::{
 const TICKT_INTERVAL: Duration = Duration::from_millis(1000);
 
 #[derive(Debug)]
-pub struct ChatServer {
+pub struct Server {
     sessions: HashMap<usize, Recipient<messages::GameStateMessage>>,
     rooms: HashMap<String, HashSet<usize>>,
     rng: ThreadRng,
     visitor_count: Arc<AtomicUsize>,
 }
 
-impl ChatServer {
-    pub fn new(visitor_count: Arc<AtomicUsize>) -> ChatServer {
+impl Server {
+    pub fn new(visitor_count: Arc<AtomicUsize>) -> Server {
         // default room
         let mut rooms = HashMap::new();
         rooms.insert("main".to_owned(), HashSet::new());
 
-        ChatServer {
+        Server {
             sessions: HashMap::new(),
             rooms,
             rng: rand::thread_rng(),
@@ -64,7 +64,7 @@ impl ChatServer {
     }
 }
 
-impl Actor for ChatServer {
+impl Actor for Server {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
@@ -72,7 +72,7 @@ impl Actor for ChatServer {
     }
 }
 
-impl Handler<messages::PlayerJoinMessage> for ChatServer {
+impl Handler<messages::PlayerJoinMessage> for Server {
     type Result = usize;
 
     fn handle(&mut self, msg: messages::PlayerJoinMessage, _: &mut Context<Self>) -> Self::Result {
@@ -100,7 +100,7 @@ impl Handler<messages::PlayerJoinMessage> for ChatServer {
 }
 
 /// Handler for Disconnect message.
-impl Handler<messages::PlayerDisconnectMessage> for ChatServer {
+impl Handler<messages::PlayerDisconnectMessage> for Server {
     type Result = ();
 
     fn handle(&mut self, msg: messages::PlayerDisconnectMessage, _: &mut Context<Self>) {
@@ -126,7 +126,7 @@ impl Handler<messages::PlayerDisconnectMessage> for ChatServer {
     }
 }
 
-impl Handler<messages::PlayerInputMessage> for ChatServer {
+impl Handler<messages::PlayerInputMessage> for Server {
     type Result = ();
 
     fn handle(&mut self, msg: messages::PlayerInputMessage, _: &mut Context<Self>) {
@@ -134,7 +134,7 @@ impl Handler<messages::PlayerInputMessage> for ChatServer {
     }
 }
 
-impl Handler<messages::ListRooms> for ChatServer {
+impl Handler<messages::ListRooms> for Server {
     type Result = MessageResult<messages::ListRooms>;
 
     fn handle(&mut self, _: messages::ListRooms, _: &mut Context<Self>) -> Self::Result {
@@ -148,7 +148,7 @@ impl Handler<messages::ListRooms> for ChatServer {
     }
 }
 
-impl Handler<messages::PlayerJoinRoomMessage> for ChatServer {
+impl Handler<messages::PlayerJoinRoomMessage> for Server {
     type Result = ();
 
     fn handle(&mut self, msg: messages::PlayerJoinRoomMessage, _: &mut Context<Self>) {
