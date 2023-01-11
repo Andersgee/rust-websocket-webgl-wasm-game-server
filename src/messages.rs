@@ -37,6 +37,20 @@ pub struct PlayerInput {
     pub step_backward: bool,
     pub step_left: bool,
     pub step_right: bool,
+    pub facing_rad: f32,
+}
+
+impl PlayerInput {
+    pub fn new() -> Self {
+        Self {
+            id: 0,
+            step_forward: false,
+            step_backward: false,
+            step_left: false,
+            step_right: false,
+            facing_rad: 0.,
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -45,4 +59,5 @@ pub struct PlayerInputWithoutId {
     pub step_backward: bool,
     pub step_left: bool,
     pub step_right: bool,
+    pub facing_rad: f32,
 }

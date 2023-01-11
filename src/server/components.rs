@@ -41,12 +41,54 @@ pub fn vec2_scale(out: &mut Vec2, k: f32) -> Vec2 {
     *out
 }
 
+//inline version
+pub fn vec2_rotate(out: &mut Vec2, origin: &Vec2, rad: f32) -> Vec2 {
+    let p0 = out[0] - origin[0];
+    let p1 = out[1] - origin[1];
+
+    let sin_c = f32::sin(rad);
+    let cos_c = f32::cos(rad);
+
+    out[0] = p0 * cos_c - p1 * sin_c + origin[0];
+    out[1] = p0 * sin_c + p1 * cos_c + origin[1];
+
+    *out
+}
+pub fn vec2_rotate_around_origin(out: &mut Vec2, rad: f32) -> Vec2 {
+    let p0 = out[0];
+    let p1 = out[1];
+
+    let sin_c = f32::sin(rad);
+    let cos_c = f32::cos(rad);
+
+    out[0] = p0 * cos_c - p1 * sin_c;
+    out[1] = p0 * sin_c + p1 * cos_c;
+
+    *out
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Player {
-    vao: Vao,
+    attributes: Attributes,
     transform: Transform,
     renderable: Renderable,
     player_input: PlayerInput,
+}
+
+impl Player {
+    pub fn new() -> Self {
+        Self {
+            transform: Transform::new(),
+            renderable: Renderable::new(Vao::Guy),
+            player_input: PlayerInput::new(),
+            attributes: Attributes { move_speed: 2.4 },
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Attributes {
+    move_speed: f32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -58,7 +100,6 @@ pub enum Vao {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Transform {
     pub pos: Vec3,
-    pub vel: Vec3,
     pub quat: Quat,
 }
 
@@ -66,7 +107,6 @@ impl Transform {
     pub fn new() -> Self {
         Self {
             pos: vec3::create(),
-            vel: vec3::create(),
             quat: quat::create(),
         }
     }
@@ -74,12 +114,13 @@ impl Transform {
 
 impl Transform {
     /// update velocity and position
-    pub fn apply(&mut self, player_input: &PlayerInput) {
+    pub fn apply(&mut self, player: &Player) {
+        let player_input = player.player_input;
         let mut v = vec2::create();
-        let right = vec2::from_values(1., 0.);
-        let left = vec2::from_values(-1., 0.);
-        let forward = vec2::from_values(0., 1.);
-        let backward = vec2::from_values(0., -1.);
+        let right = [1.0, 0.0];
+        let left = [-1.0, 0.0];
+        let forward = [0.0, 1.0];
+        let backward = [0.0, -1.0];
         if player_input.step_forward {
             vec2_add(&mut v, &forward);
         }
@@ -93,12 +134,10 @@ impl Transform {
             vec2_add(&mut v, &left);
         }
 
+        vec2_rotate_around_origin(&mut v, player_input.facing_rad);
         vec2_normalize(&mut v);
-        let move_speed = 2.0;
-        vec2_scale(&mut v, move_speed);
+        vec2_scale(&mut v, player.attributes.move_speed);
 
-        self.vel[0] = v[0];
-        self.vel[1] = v[1];
         self.pos[0] += v[0];
         self.pos[1] += v[1];
     }
@@ -119,6 +158,7 @@ impl Renderable {
     }
 
     pub fn apply(&mut self, transform: &Transform) {
-        mat4::from_translation(&mut self.model_mat, &transform.pos);
+        //mat4::from_translation(&mut self.model_mat, &transform.pos);
+        mat4::from_rotation_translation(&mut self.model_mat, &transform.quat, &transform.pos);
     }
 }
