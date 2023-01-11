@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::messages::PlayerInput;
 
 //note to self:
-//anything in this file should be identical on server and client
+//anything in this file should be identical on server and client?
 
 //inline version
 pub fn vec2_add(out: &mut Vec2, v: &Vec2) -> Vec2 {
@@ -91,7 +91,7 @@ pub fn quat_from_euler_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
 pub struct Player {
     attributes: Attributes,
     transform: Transform,
-    renderable: Renderable,
+    pub renderable: Renderable,
     player_input: PlayerInput,
 }
 

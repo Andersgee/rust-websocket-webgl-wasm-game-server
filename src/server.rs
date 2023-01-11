@@ -9,12 +9,15 @@ use std::{
         Arc,
     },
 };
+
+use self::components::Player;
 mod components;
 
-const TICKT_INTERVAL: Duration = Duration::from_millis(1000);
+const TICK_INTERVAL: Duration = Duration::from_millis(1000);
 
 #[derive(Debug)]
 pub struct Server {
+    players: Vec<Player>,
     sessions: HashMap<usize, Recipient<messages::GameStateMessage>>,
     rooms: HashMap<String, HashSet<usize>>,
     rng: ThreadRng,
@@ -28,6 +31,7 @@ impl Server {
         rooms.insert("main".to_owned(), HashSet::new());
 
         Server {
+            players: vec![],
             sessions: HashMap::new(),
             rooms,
             rng: rand::thread_rng(),
@@ -55,13 +59,26 @@ impl Server {
         }
     }
 
-    fn tick(&self) {
+    fn tick(&mut self) {
         println!("server tick, sending to all sessions");
-        self.broadcast("tick")
+        for player in &mut self.players {
+            player.apply();
+        }
+        let renderable = self
+            .players
+            .iter()
+            .map(|player| player.renderable)
+            .collect::<Vec<components::Renderable>>();
+
+        let serialized = serde_json::to_string(&renderable);
+        match serialized {
+            Ok(serialized_renderable) => self.broadcast(&serialized_renderable),
+            Err(_) => println!("failed to serialize renderable, not broadcasting anything"),
+        }
     }
 
     fn start_tick_interval(&self, ctx: &mut Context<Self>) {
-        ctx.run_interval(TICKT_INTERVAL, |act, _ctx| act.tick());
+        ctx.run_interval(TICK_INTERVAL, |act, _ctx| act.tick());
     }
 
     fn apply_player_input(&self, player_id: usize, player_input: messages::PlayerInput) {
