@@ -28,7 +28,7 @@ pub struct PlayerJoinRoomMessage {
     pub name: String,
 }
 
-#[derive(Message)]
+#[derive(Message, Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[rtype(result = "()")]
 pub struct PlayerInput {
     /// Id of the client session
