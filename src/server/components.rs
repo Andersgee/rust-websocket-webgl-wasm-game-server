@@ -144,8 +144,8 @@ impl Transform {
         let mut v = vec2::create();
         let right = [1.0, 0.0];
         let left = [-1.0, 0.0];
-        let forward = [0.0, 1.0];
-        let backward = [0.0, -1.0];
+        let forward = [0.0, -1.0];
+        let backward = [0.0, 1.0];
         if player_input.step_forward {
             vec2_add(&mut v, &forward);
         }
@@ -165,9 +165,9 @@ impl Transform {
 
         //update pos
         self.pos[0] += v[0];
-        self.pos[1] += v[1];
+        self.pos[2] += v[1];
         //update quat
-        quat_from_euler_rad(&mut self.quat, 0.0, 0.0, player_input.facing_rad);
+        quat_from_euler_rad(&mut self.quat, 0.0, -player_input.facing_rad, 0.0);
     }
 }
 

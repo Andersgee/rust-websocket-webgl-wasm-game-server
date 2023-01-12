@@ -61,6 +61,9 @@ impl Server {
     }
 
     fn tick(&mut self) {
+        if self.players.len() < 1 {
+            return;
+        }
         //println!("server tick, sending to all sessions");
         for (_id, player) in &mut self.players {
             player.apply();
@@ -138,7 +141,7 @@ impl Handler<messages::PlayerDisconnectMessage> for Server {
     type Result = ();
 
     fn handle(&mut self, msg: messages::PlayerDisconnectMessage, _: &mut Context<Self>) {
-        println!("Someone disconnected");
+        println!("Someone disconnected, id:{}", msg.id);
 
         self.sessions.remove(&msg.id);
         self.players.remove(&msg.id);
