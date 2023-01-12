@@ -32,8 +32,8 @@ impl Server {
         rooms.insert("main".to_owned(), HashSet::new());
 
         Server {
-            players: HashMap::new(),
-            sessions: HashMap::new(),
+            players: HashMap::with_capacity(10),
+            sessions: HashMap::with_capacity(10),
             rooms,
             rng: rand::thread_rng(),
             visitor_count,

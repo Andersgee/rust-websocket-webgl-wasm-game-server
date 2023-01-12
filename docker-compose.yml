@@ -1,0 +1,16 @@
+#start container: sudo docker compose up
+#remove container: sudo docker compose down
+#remove data: sudo docker compose down -v
+version: "3.8"
+
+services:
+  gameserver:
+    image: andersgee/websocketgame-rust-server
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    ports:
+      - $PORT_EXPOSED:$PORT
+    expose:
+      - $MYSQL_PORT_EXPOSED
