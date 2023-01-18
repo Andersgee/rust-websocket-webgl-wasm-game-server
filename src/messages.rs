@@ -28,6 +28,13 @@ pub struct PlayerJoinRoomMessage {
     pub name: String,
 }
 
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct ChatMessage {
+    pub id: usize,
+    pub text: String,
+}
+
 #[derive(Message, Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[rtype(result = "()")]
 pub struct PlayerInput {

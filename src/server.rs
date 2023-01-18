@@ -194,3 +194,15 @@ impl Handler<messages::PlayerJoinRoomMessage> for Server {
         //self.send_message(&name, "Someone connected", id);
     }
 }
+
+impl Handler<messages::ChatMessage> for Server {
+    type Result = ();
+
+    fn handle(&mut self, msg: messages::ChatMessage, _: &mut Context<Self>) {
+        let s = format!("chat {} {}", msg.id, msg.text);
+        self.broadcast(&s);
+        //let messages::PlayerJoinRoomMessage { id, name } = msg;
+
+        //self.send_message(&name, "Someone connected", id);
+    }
+}

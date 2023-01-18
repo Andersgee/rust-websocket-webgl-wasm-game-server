@@ -55,7 +55,7 @@ impl Actor for Session {
                 match res {
                     Ok(res) => {
                         act.id = res;
-                        let s = format!("meta yourId {}", res);
+                        let s = format!("meta player_id {}", res);
                         ctx.text(s);
                     }
                     _ => ctx.stop(),
@@ -137,7 +137,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                                 })
                                 .wait(ctx)
                         }
-
                         "/join" => {
                             //join room
                             if arg != "" {
@@ -147,6 +146,17 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                                     name: self.room.clone(),
                                 });
 
+                                //ctx.text("joined");
+                            }
+                        }
+                        "/chat" => {
+                            //chat message
+                            if arg != "" {
+                                self.room = arg.to_owned();
+                                self.server_addr.do_send(messages::ChatMessage {
+                                    id: self.id,
+                                    text: arg.to_string(),
+                                });
                                 //ctx.text("joined");
                             }
                         }
