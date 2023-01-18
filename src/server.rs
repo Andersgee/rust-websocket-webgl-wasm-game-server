@@ -13,8 +13,8 @@ use std::{
 use self::components::Player;
 mod components;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(17);
-//const TICK_INTERVAL: Duration = Duration::from_millis(1000);
+//const TICK_INTERVAL: Duration = Duration::from_millis(17);
+const TICK_INTERVAL: Duration = Duration::from_millis(1000);
 
 #[derive(Debug)]
 pub struct Server {

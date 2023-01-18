@@ -13,4 +13,4 @@ services:
     ports:
       - $PORT_EXPOSED:$PORT
     expose:
-      - $MYSQL_PORT_EXPOSED
+      - $PORT_EXPOSED
