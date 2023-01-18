@@ -53,7 +53,11 @@ impl Actor for Session {
             .into_actor(self)
             .then(|res, act, ctx| {
                 match res {
-                    Ok(res) => act.id = res,
+                    Ok(res) => {
+                        act.id = res;
+                        let s = format!("meta yourId {}", res);
+                        ctx.text(s);
+                    }
                     _ => ctx.stop(),
                 }
                 fut::ready(())
