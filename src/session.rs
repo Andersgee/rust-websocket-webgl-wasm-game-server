@@ -180,6 +180,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                                 step_backward: p.step_backward,
                                 step_left: p.step_left,
                                 step_right: p.step_right,
+                                kick: p.kick,
+                                punch: p.punch,
                                 facing_rad: p.facing_rad,
                             };
                             self.server_addr.do_send(player_input);

@@ -35,6 +35,18 @@ pub struct ChatMessage {
     pub text: String,
 }
 
+//the player_input sent from client
+#[derive(Deserialize)]
+pub struct PlayerInputWithoutId {
+    pub step_forward: bool,
+    pub step_backward: bool,
+    pub step_left: bool,
+    pub step_right: bool,
+    pub kick: bool,
+    pub punch: bool,
+    pub facing_rad: f32,
+}
+
 #[derive(Message, Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[rtype(result = "()")]
 pub struct PlayerInput {
@@ -44,6 +56,8 @@ pub struct PlayerInput {
     pub step_backward: bool,
     pub step_left: bool,
     pub step_right: bool,
+    pub kick: bool,
+    pub punch: bool,
     pub facing_rad: f32,
 }
 
@@ -55,16 +69,9 @@ impl PlayerInput {
             step_backward: false,
             step_left: false,
             step_right: false,
+            kick: false,
+            punch: false,
             facing_rad: 0.,
         }
     }
-}
-
-#[derive(Deserialize)]
-pub struct PlayerInputWithoutId {
-    pub step_forward: bool,
-    pub step_backward: bool,
-    pub step_left: bool,
-    pub step_right: bool,
-    pub facing_rad: f32,
 }

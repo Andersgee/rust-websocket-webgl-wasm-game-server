@@ -93,6 +93,7 @@ pub struct Player {
     transform: Transform,
     pub renderable: Renderable,
     pub player_input: PlayerInput,
+    anim_target_id: AnimTargetId,
 }
 
 impl Player {
@@ -102,13 +103,24 @@ impl Player {
             attributes: Attributes { move_speed: 0.05 },
             transform: Transform::new(),
             renderable: Renderable::new(Vao::Guy),
+            anim_target_id: AnimTargetId::Idle,
         }
     }
 
     /// apply self.player_input all the way to self.renderable
     pub fn apply(&mut self) {
-        self.transform.apply(&self.player_input, &self.attributes);
+        let is_waling = self.transform.apply(&self.player_input, &self.attributes);
         self.renderable.apply(&self.transform);
+
+        if is_waling {
+            self.anim_target_id = AnimTargetId::Walk;
+        } else if self.player_input.kick {
+            self.anim_target_id = AnimTargetId::Kick;
+        } else if self.player_input.punch {
+            self.anim_target_id = AnimTargetId::Punch;
+        } else {
+            self.anim_target_id = AnimTargetId::Idle;
+        }
     }
 }
 
@@ -121,6 +133,14 @@ pub struct Attributes {
 pub enum Vao {
     Guy,
     Floor,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub enum AnimTargetId {
+    Idle,
+    Walk,
+    Kick,
+    Punch,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -140,7 +160,8 @@ impl Transform {
 
 impl Transform {
     /// update velocity and position
-    pub fn apply(&mut self, player_input: &PlayerInput, attributes: &Attributes) {
+    pub fn apply(&mut self, player_input: &PlayerInput, attributes: &Attributes) -> bool {
+        let mut is_walking = false;
         let mut v = vec2::create();
         let right = [1.0, 0.0];
         let left = [-1.0, 0.0];
@@ -148,15 +169,19 @@ impl Transform {
         let backward = [0.0, 1.0];
         if player_input.step_forward {
             vec2_add(&mut v, &forward);
+            is_walking = true;
         }
         if player_input.step_backward {
             vec2_add(&mut v, &backward);
+            is_walking = true;
         }
         if player_input.step_right {
             vec2_add(&mut v, &right);
+            is_walking = true;
         }
         if player_input.step_left {
             vec2_add(&mut v, &left);
+            is_walking = true;
         }
 
         vec2_rotate_around_origin(&mut v, player_input.facing_rad);
@@ -168,6 +193,8 @@ impl Transform {
         self.pos[2] += v[1];
         //update quat
         quat_from_euler_rad(&mut self.quat, 0.0, -player_input.facing_rad, 0.0);
+
+        is_walking
     }
 }
 
