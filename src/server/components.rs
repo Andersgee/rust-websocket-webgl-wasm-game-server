@@ -67,7 +67,14 @@ pub fn vec2_rotate_around_origin(out: &mut Vec2, rad: f32) -> Vec2 {
     *out
 }
 
-pub fn quat_from_euler_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
+/// [1,0] would give rotation 0 around y axis
+/// [0,1] would give rotation pi/2 around y axis
+/// [-1,0] would give rotation pi around y axis
+fn quat_from_vec2(out: &mut Quat, v: &Vec2) {
+    quat_from_rad(out, 0.0, v[0].atan2(v[1]), 0.0)
+}
+
+pub fn quat_from_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
     let half_to_rad = 0.5;
 
     let x = x * half_to_rad;
@@ -192,8 +199,10 @@ impl Transform {
         self.pos[0] += v[0];
         self.pos[2] += v[1];
         //update quat
-        quat_from_euler_rad(&mut self.quat, 0.0, -player_input.facing_rad, 0.0);
-
+        //quat_from_rad(&mut self.quat, 0.0, -player_input.facing_rad, 0.0);
+        if v[0] != 0. && v[1] != 0. {
+            quat_from_vec2(&mut self.quat, &v);
+        }
         is_walking
     }
 }
