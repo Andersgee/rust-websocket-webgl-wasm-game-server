@@ -207,7 +207,11 @@ impl Transform {
         //update quat
         //quat_from_rad(&mut self.quat, 0.0, -player_input.facing_rad, 0.0);
         if is_walking {
-            quat_from_vec2(&mut self.quat, &v);
+            let mut targetquat = quat::create();
+            let prev_quat =
+                quat::from_values(self.quat[0], self.quat[1], self.quat[2], self.quat[3]);
+            quat_from_vec2(&mut targetquat, &v);
+            quat::slerp(&mut self.quat, &prev_quat, &targetquat, 0.1);
         }
         is_walking
     }
