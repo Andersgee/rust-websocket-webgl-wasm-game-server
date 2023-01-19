@@ -116,18 +116,23 @@ impl Player {
 
     /// apply self.player_input all the way to self.renderable
     pub fn apply(&mut self) {
-        let is_waling = self.transform.apply(&self.player_input, &self.attributes);
-        self.renderable.apply(&self.transform);
+        let mut is_ability = false;
+        self.anim_target_id = AnimTargetId::Idle;
 
-        if is_waling {
-            self.anim_target_id = AnimTargetId::Walk;
-        } else if self.player_input.kick {
+        if self.player_input.kick {
             self.anim_target_id = AnimTargetId::Kick;
+            is_ability = true;
         } else if self.player_input.punch {
             self.anim_target_id = AnimTargetId::Punch;
-        } else {
-            self.anim_target_id = AnimTargetId::Idle;
+            is_ability = true;
         }
+        if is_ability == false {
+            let is_walking = self.transform.apply(&self.player_input, &self.attributes);
+            if is_walking {
+                self.anim_target_id = AnimTargetId::Walk;
+            }
+        }
+        self.renderable.apply(&self.transform);
     }
 }
 
