@@ -195,6 +195,7 @@ impl Transform {
             vec2_add(&mut v, &left);
             is_walking = true;
         }
+        let is_walking = v[0] != 0. || v[1] != 0.;
 
         //vec2_rotate_around_origin(&mut v, player_input.facing_rad);
         vec2_normalize(&mut v);
@@ -205,7 +206,7 @@ impl Transform {
         self.pos[2] += v[1];
         //update quat
         //quat_from_rad(&mut self.quat, 0.0, -player_input.facing_rad, 0.0);
-        if v[0] != 0. || v[1] != 0. {
+        if is_walking {
             quat_from_vec2(&mut self.quat, &v);
         }
         is_walking
