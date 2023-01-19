@@ -104,11 +104,11 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new() -> Self {
+    pub fn new(pos: [f32; 3]) -> Self {
         Self {
             player_input: PlayerInput::new(),
             attributes: Attributes { move_speed: 0.05 },
-            transform: Transform::new(),
+            transform: Transform::new(pos),
             renderable: Renderable::new(Vao::Guy),
             anim_target_id: AnimTargetId::Idle,
         }
@@ -162,9 +162,9 @@ pub struct Transform {
 }
 
 impl Transform {
-    pub fn new() -> Self {
+    pub fn new(pos: [f32; 3]) -> Self {
         Self {
-            pos: vec3::create(),
+            pos,
             quat: quat::create(),
         }
     }

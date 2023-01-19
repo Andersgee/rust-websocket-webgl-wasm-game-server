@@ -119,10 +119,12 @@ impl Handler<messages::PlayerConnectMessage> for Server {
         // notify all users in same room
         //self.send_message("main", "Someone joined", 0);
 
+        let randvec3: [f32; 3] = self.rng.gen();
+        let pos = [(randvec3[0] - 0.5) * 16.0, 0.0, (randvec3[2] - 0.5) * 16.0];
         // register session with random id
         let id = self.rng.gen::<usize>();
         self.sessions.insert(id, msg.addr);
-        self.players.insert(id, Player::new());
+        self.players.insert(id, Player::new(pos));
         let _oldcount = self.visitor_count.fetch_add(1, Ordering::SeqCst);
 
         /*
