@@ -95,12 +95,21 @@ pub fn quat_from_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct Projectile {
+    pub lifetime_ticks: u32,
+    pub transforms: Transform,
+    pub renderable: Renderable,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Player {
     pub attributes: Attributes,
     pub transform: Transform,
     pub renderable: Renderable,
     pub player_input: PlayerInput,
-    anim_target_id: AnimTargetId,
+    pub anim_target_id: AnimTargetId,
+    pub anim_ticks: u32,
+    pub projectile: Option<Projectile>,
 }
 
 impl Player {
@@ -111,11 +120,14 @@ impl Player {
             transform: Transform::new(pos),
             renderable: Renderable::new(Vao::Guy),
             anim_target_id: AnimTargetId::Idle,
+            anim_ticks: 0,
+            projectile: None,
         }
     }
 
     /// apply self.player_input all the way to self.renderable
     pub fn apply(&mut self) {
+        let prev_anim_target_id = self.anim_target_id.clone();
         let mut is_ability = false;
         self.anim_target_id = AnimTargetId::Idle;
 
@@ -133,6 +145,12 @@ impl Player {
             }
         }
         self.renderable.apply(&self.transform);
+
+        if prev_anim_target_id != self.anim_target_id {
+            self.anim_ticks = 0;
+        } else {
+            self.anim_ticks += 1;
+        }
     }
 }
 
