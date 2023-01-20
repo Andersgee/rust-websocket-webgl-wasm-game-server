@@ -69,13 +69,7 @@ impl Server {
         for (_id, player) in &mut self.players {
             player.apply();
         }
-        /*
-                let renderable = self
-                    .players
-                    .iter()
-                    .map(|(_id, player)| player.renderable)
-                    .collect::<Vec<components::Player>>();
-        */
+
         let serialized = serde_json::to_string(&self.players);
         match serialized {
             Ok(serialized_renderable) => self.broadcast(&serialized_renderable),

@@ -213,6 +213,14 @@ impl Transform {
             quat_from_vec2(&mut targetquat, &v);
             quat::slerp(&mut self.quat, &prev_quat, &targetquat, 0.1);
         }
+
+        //gravity
+        /*
+        if self.pos[0] < -10.0 || self.pos[0] > 10.0 || self.pos[2] < -10.0 || self.pos[2] > 10.0 {
+            self.pos[1] -= 1.0;
+        }
+         */
+
         is_walking
     }
 }
