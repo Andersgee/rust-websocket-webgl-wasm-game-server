@@ -98,7 +98,7 @@ pub fn quat_from_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
 pub struct Projectile {
     pub ticks: u32,
     pub ticks_lifetime: u32,
-    pub transforms: Transform,
+    pub transform: Transform,
     pub renderable: Renderable,
 }
 

@@ -33,12 +33,17 @@ fn attack(players: &mut HashMap<usize, Player>) {
                     player.projectile = Some(Projectile {
                         ticks: 0,
                         ticks_lifetime: 10,
-                        transforms: Transform::new([0., 0., 0.]),
+                        transform: Transform::new([0., 0., 0.]),
                         renderable: Renderable::new(Vao::Guy),
                     })
                 }
             }
             AnimTargetId::Punch => (),
+            _ => (),
+        }
+
+        match &mut player.projectile {
+            Some(proj) => proj.renderable.apply(&proj.transform),
             _ => (),
         }
     }
