@@ -96,7 +96,8 @@ pub fn quat_from_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Projectile {
-    pub lifetime_ticks: u32,
+    pub ticks: u32,
+    pub ticks_lifetime: u32,
     pub transforms: Transform,
     pub renderable: Renderable,
 }
@@ -148,8 +149,18 @@ impl Player {
 
         if prev_anim_target_id != self.anim_target_id {
             self.anim_ticks = 0;
+            self.projectile = None;
         } else {
             self.anim_ticks += 1;
+            match &mut self.projectile {
+                Some(proj) => {
+                    proj.ticks += 1;
+                    if proj.ticks > proj.ticks_lifetime {
+                        self.projectile = None;
+                    }
+                }
+                None => (),
+            }
         }
     }
 }
