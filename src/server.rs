@@ -12,6 +12,7 @@ use std::{
 
 use self::components::Player;
 mod components;
+mod systems;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(17);
 //const TICK_INTERVAL: Duration = Duration::from_millis(1000);
@@ -69,6 +70,8 @@ impl Server {
         for (_id, player) in &mut self.players {
             player.apply();
         }
+
+        systems::run(&mut self.players);
 
         let serialized = serde_json::to_string(&self.players);
         match serialized {

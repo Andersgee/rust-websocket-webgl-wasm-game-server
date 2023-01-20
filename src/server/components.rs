@@ -96,8 +96,8 @@ pub fn quat_from_rad(out: &mut Quat, x: f32, y: f32, z: f32) {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Player {
-    attributes: Attributes,
-    transform: Transform,
+    pub attributes: Attributes,
+    pub transform: Transform,
     pub renderable: Renderable,
     pub player_input: PlayerInput,
     anim_target_id: AnimTargetId,
