@@ -152,7 +152,9 @@ impl Player {
             is_ability = true;
         }
         if is_ability == false {
-            let is_walking = self.transform.apply(&self.player_input, &self.attributes);
+            let is_walking = self
+                .transform
+                .apply(&self.player_input, &mut self.attributes);
             if is_walking {
                 self.anim_target_id = AnimTargetId::Walk;
             }
@@ -216,7 +218,7 @@ impl Transform {
 
 impl Transform {
     /// update velocity and position
-    pub fn apply(&mut self, player_input: &PlayerInput, attributes: &Attributes) -> bool {
+    pub fn apply(&mut self, player_input: &PlayerInput, attributes: &mut Attributes) -> bool {
         let mut is_walking = false;
         let mut v = vec2::create();
         let right = [1.0, 0.0];
@@ -241,6 +243,11 @@ impl Transform {
         }
         let is_walking = v[0] != 0. || v[1] != 0.;
 
+        if player_input.run {
+            attributes.move_speed = 0.1;
+        } else {
+            attributes.move_speed = 0.05;
+        }
         //vec2_rotate_around_origin(&mut v, player_input.facing_rad);
         vec2_normalize(&mut v);
         vec2_scale(&mut v, attributes.move_speed);

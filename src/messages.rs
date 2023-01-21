@@ -44,6 +44,7 @@ pub struct PlayerInputWithoutId {
     pub step_right: bool,
     pub kick: bool,
     pub punch: bool,
+    pub run: bool,
     pub facing_rad: f32,
 }
 
@@ -58,6 +59,7 @@ pub struct PlayerInput {
     pub step_right: bool,
     pub kick: bool,
     pub punch: bool,
+    pub run: bool,
     pub facing_rad: f32,
 }
 
@@ -71,6 +73,7 @@ impl PlayerInput {
             step_right: false,
             kick: false,
             punch: false,
+            run: false,
             facing_rad: 0.,
         }
     }
