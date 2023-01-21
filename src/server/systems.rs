@@ -1,14 +1,13 @@
+use super::components::{Renderable, Transform};
+use crate::server::components::{AnimTargetId, Player, Projectile, Vao};
 use gl_matrix::{quat, vec3};
 use rand::{self, Rng};
 use std::collections::HashMap;
 
-use crate::server::components::{AnimTargetId, Player, Projectile, Vao};
-
-use super::components::{Renderable, Transform};
-
 pub fn run(players: &mut HashMap<usize, Player>) {
     gravity(players);
-    attack(players);
+    spawn_attack_projectiles(players);
+    recievedmg(players);
 }
 
 fn gravity(players: &mut HashMap<usize, Player>) {
@@ -26,7 +25,7 @@ fn gravity(players: &mut HashMap<usize, Player>) {
     }
 }
 
-fn attack(players: &mut HashMap<usize, Player>) {
+fn spawn_attack_projectiles(players: &mut HashMap<usize, Player>) {
     for (_id, player) in players {
         match player.anim_target_id {
             AnimTargetId::Kick => {
@@ -79,6 +78,28 @@ fn attack(players: &mut HashMap<usize, Player>) {
         match &mut player.projectile {
             Some(proj) => proj.renderable.apply(&proj.transform),
             _ => (),
+        }
+    }
+}
+
+fn recievedmg(players: &mut HashMap<usize, Player>) {
+    let projectiles: Vec<(usize, Projectile)> = players
+        .iter()
+        .filter_map(|(id, player)| match player.projectile {
+            Some(proj) => Some((*id, proj)),
+            None => None,
+        })
+        .collect();
+
+    for (id, player) in players {
+        for (attackerId, projectile) in &projectiles {
+            if id == attackerId {
+                continue;
+            }
+
+            if vec3::dist(&projectile.transform.pos, &player.transform.pos) < 1.0 {
+                player.attributes.health -= 10.0;
+            }
         }
     }
 }

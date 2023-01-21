@@ -117,7 +117,10 @@ impl Player {
     pub fn new(pos: [f32; 3]) -> Self {
         Self {
             player_input: PlayerInput::new(),
-            attributes: Attributes { move_speed: 0.05 },
+            attributes: Attributes {
+                move_speed: 0.05,
+                health: 100.0,
+            },
             transform: Transform::new(pos),
             renderable: Renderable::new(Vao::Guy),
             anim_target_id: AnimTargetId::Idle,
@@ -167,7 +170,8 @@ impl Player {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Attributes {
-    move_speed: f32,
+    pub move_speed: f32,
+    pub health: f32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
