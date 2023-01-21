@@ -1,3 +1,4 @@
+use gl_matrix::{quat, vec3};
 use rand::{self, Rng};
 use std::collections::HashMap;
 
@@ -30,10 +31,16 @@ fn attack(players: &mut HashMap<usize, Player>) {
         match player.anim_target_id {
             AnimTargetId::Kick => {
                 if player.anim_ticks == 20 {
+                    //use same quat (player.transform.quat) but translate 2 units or smth in the direction that quat is pointing?
+                    let offset = vec3::from_values(0.0, 1.0, 0.0);
+                    let transform = Transform {
+                        pos: vec3::add(&mut vec3::create(), &player.transform.pos, &offset),
+                        quat: player.transform.quat,
+                    };
                     player.projectile = Some(Projectile {
                         ticks: 0,
                         ticks_lifetime: 15,
-                        transform: Transform::new(player.transform.pos),
+                        transform,
                         renderable: Renderable::new(Vao::Unitcube),
                     })
                 }
