@@ -40,7 +40,7 @@ fn spawn_attack_projectiles(players: &mut HashMap<usize, Player>) {
                     };
                     player.projectile = Some(Projectile {
                         ticks: 0,
-                        ticks_lifetime: 15,
+                        ticks_lifetime: 1,
                         transform,
                         renderable: Renderable::new(Vao::Unitcube),
                     })
@@ -60,7 +60,7 @@ fn spawn_attack_projectiles(players: &mut HashMap<usize, Player>) {
                     };
                     player.projectile = Some(Projectile {
                         ticks: 0,
-                        ticks_lifetime: 15,
+                        ticks_lifetime: 1,
                         transform,
                         renderable: Renderable::new(Vao::Unitcube),
                     })
@@ -96,7 +96,7 @@ fn recievedmg(players: &mut HashMap<usize, Player>) {
                 player.attributes.health -= 10.0;
                 player.attributes.is_taking_dmg = true;
             }
-            if player.attributes.health < 1.0 {
+            if player.attributes.health <= 0.0 {
                 player.respawn();
             }
         }
