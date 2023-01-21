@@ -1,6 +1,6 @@
 use super::components::{Renderable, Transform};
 use crate::server::components::{AnimTargetId, Player, Projectile, Vao};
-use gl_matrix::{quat, vec3};
+use gl_matrix::vec3;
 use rand::{self, Rng};
 use std::collections::HashMap;
 
@@ -30,8 +30,6 @@ fn spawn_attack_projectiles(players: &mut HashMap<usize, Player>) {
         match player.anim_target_id {
             AnimTargetId::Kick => {
                 if player.anim_ticks == 20 {
-                    //use same quat (player.transform.quat) but translate 2 units or smth in the direction that quat is pointing?
-
                     let mut offset = vec3::create();
                     vec3::transform_quat(
                         &mut offset,
@@ -52,8 +50,6 @@ fn spawn_attack_projectiles(players: &mut HashMap<usize, Player>) {
             }
             AnimTargetId::Punch => {
                 if player.anim_ticks == 20 {
-                    //use same quat (player.transform.quat) but translate 2 units or smth in the direction that quat is pointing?
-
                     let mut offset = vec3::create();
                     vec3::transform_quat(
                         &mut offset,
@@ -92,8 +88,8 @@ fn recievedmg(players: &mut HashMap<usize, Player>) {
         .collect();
 
     for (id, player) in players {
-        for (attackerId, projectile) in &projectiles {
-            if id == attackerId {
+        for (attacker_id, projectile) in &projectiles {
+            if id == attacker_id {
                 continue;
             }
 
