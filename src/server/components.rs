@@ -174,6 +174,7 @@ pub struct Attributes {
 pub enum Vao {
     Guy,
     Floor,
+    Unitcube,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]

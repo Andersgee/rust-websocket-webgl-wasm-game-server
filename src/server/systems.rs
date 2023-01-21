@@ -29,12 +29,12 @@ fn attack(players: &mut HashMap<usize, Player>) {
     for (_id, player) in players {
         match player.anim_target_id {
             AnimTargetId::Kick => {
-                if player.anim_ticks == 30 {
+                if player.anim_ticks == 20 {
                     player.projectile = Some(Projectile {
                         ticks: 0,
-                        ticks_lifetime: 10,
-                        transform: Transform::new([0., 0., 0.]),
-                        renderable: Renderable::new(Vao::Guy),
+                        ticks_lifetime: 15,
+                        transform: Transform::new(player.transform.pos),
+                        renderable: Renderable::new(Vao::Unitcube),
                     })
                 }
             }
