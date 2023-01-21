@@ -1,5 +1,6 @@
 use gl_matrix::common::{Mat4, Quat, Vec2, Vec3};
 use gl_matrix::{mat4, quat, vec2, vec3};
+use rand::{self, Rng};
 use serde::{Deserialize, Serialize};
 
 use crate::messages::PlayerInput;
@@ -127,6 +128,12 @@ impl Player {
             anim_ticks: 0,
             projectile: None,
         }
+    }
+
+    pub fn respawn(&mut self) {
+        let randvec3: [f32; 3] = rand::thread_rng().gen();
+        let pos = [(randvec3[0] - 0.5) * 16.0, 0.0, (randvec3[2] - 0.5) * 16.0];
+        self.transform.pos = pos;
     }
 
     /// apply self.player_input all the way to self.renderable

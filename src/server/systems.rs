@@ -18,9 +18,7 @@ fn gravity(players: &mut HashMap<usize, Player>) {
         }
 
         if player.transform.pos[1] < -8.0 {
-            let randvec3: [f32; 3] = rand::thread_rng().gen();
-            let pos = [(randvec3[0] - 0.5) * 16.0, 0.0, (randvec3[2] - 0.5) * 16.0];
-            player.transform.pos = pos;
+            player.respawn();
         }
     }
 }
