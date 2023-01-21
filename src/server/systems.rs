@@ -32,7 +32,13 @@ fn attack(players: &mut HashMap<usize, Player>) {
             AnimTargetId::Kick => {
                 if player.anim_ticks == 20 {
                     //use same quat (player.transform.quat) but translate 2 units or smth in the direction that quat is pointing?
-                    let offset = vec3::from_values(0.0, 1.0, 0.0);
+
+                    let mut offset = vec3::create();
+                    vec3::transform_quat(
+                        &mut offset,
+                        &vec3::from_values(0.0, 0.7, 1.2),
+                        &player.transform.quat,
+                    );
                     let transform = Transform {
                         pos: vec3::add(&mut vec3::create(), &player.transform.pos, &offset),
                         quat: player.transform.quat,
