@@ -121,6 +121,7 @@ impl Player {
             attributes: Attributes {
                 move_speed: 0.05,
                 health: 100.0,
+                is_taking_dmg: false,
             },
             transform: Transform::new(pos),
             renderable: Renderable::new(Vao::Guy),
@@ -180,6 +181,7 @@ impl Player {
 pub struct Attributes {
     pub move_speed: f32,
     pub health: f32,
+    pub is_taking_dmg: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]

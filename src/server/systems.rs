@@ -86,6 +86,7 @@ fn recievedmg(players: &mut HashMap<usize, Player>) {
         .collect();
 
     for (id, player) in players {
+        player.attributes.is_taking_dmg = false;
         for (attacker_id, projectile) in &projectiles {
             if id == attacker_id {
                 continue;
@@ -93,6 +94,7 @@ fn recievedmg(players: &mut HashMap<usize, Player>) {
 
             if vec3::dist(&projectile.transform.pos, &player.transform.pos) < 1.0 {
                 player.attributes.health -= 10.0;
+                player.attributes.is_taking_dmg = true;
             }
             if player.attributes.health < 1.0 {
                 player.respawn();
