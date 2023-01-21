@@ -94,6 +94,9 @@ fn recievedmg(players: &mut HashMap<usize, Player>) {
             if vec3::dist(&projectile.transform.pos, &player.transform.pos) < 1.0 {
                 player.attributes.health -= 10.0;
             }
+            if player.attributes.health < 1.0 {
+                player.respawn();
+            }
         }
     }
 }

@@ -134,6 +134,7 @@ impl Player {
         let randvec3: [f32; 3] = rand::thread_rng().gen();
         let pos = [(randvec3[0] - 0.5) * 16.0, 0.0, (randvec3[2] - 0.5) * 16.0];
         self.transform.pos = pos;
+        self.attributes.health = 100.0;
     }
 
     /// apply self.player_input all the way to self.renderable
