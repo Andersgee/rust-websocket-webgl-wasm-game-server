@@ -14,7 +14,11 @@ use self::components::Player;
 mod components;
 mod systems;
 
-const TICK_INTERVAL: Duration = Duration::from_millis(17);
+const TICK_MS: u64 = 17;
+pub const TICKS_PER_SECOND: f32 = 1000.0 / TICK_MS as f32;
+
+const TICK_INTERVAL: Duration = Duration::from_millis(TICK_MS);
+//const TICK_INTERVAL: Duration = Duration::from_millis(17);
 //const TICK_INTERVAL: Duration = Duration::from_millis(1000);
 //const TICK_INTERVAL: Duration = Duration::from_millis(34);
 

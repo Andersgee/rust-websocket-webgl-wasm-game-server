@@ -4,6 +4,7 @@ use rand::{self, Rng};
 use serde::{Deserialize, Serialize};
 
 use crate::messages::PlayerInput;
+use crate::server::TICKS_PER_SECOND;
 
 //note to self:
 //anything in this file should be identical on server and client?
@@ -119,7 +120,7 @@ impl Player {
         Self {
             player_input: PlayerInput::new(),
             attributes: Attributes {
-                move_speed: 0.05,
+                move_speed: 3.0,
                 health: 100.0,
                 is_taking_dmg: false,
             },
@@ -181,6 +182,7 @@ impl Player {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Attributes {
+    /// move_speed unit is distancePerSecond. (distancePerTick = distancePerSecond/ticksPerSecond)
     pub move_speed: f32,
     pub health: f32,
     pub is_taking_dmg: bool,
@@ -244,13 +246,14 @@ impl Transform {
         let is_walking = v[0] != 0. || v[1] != 0.;
 
         if player_input.run {
-            attributes.move_speed = 0.1;
+            attributes.move_speed = 6.0;
         } else {
-            attributes.move_speed = 0.05;
+            attributes.move_speed = 3.0;
         }
         //vec2_rotate_around_origin(&mut v, player_input.facing_rad);
         vec2_normalize(&mut v);
-        vec2_scale(&mut v, attributes.move_speed);
+        let dist_per_tick = attributes.move_speed / TICKS_PER_SECOND;
+        vec2_scale(&mut v, dist_per_tick);
 
         //update pos
         self.pos[0] += v[0];
