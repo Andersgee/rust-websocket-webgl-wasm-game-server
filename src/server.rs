@@ -95,7 +95,7 @@ impl Server {
             .entry(player_id)
             .and_modify(|p| p.player_input = player_input);
 
-        println!("apply_player_input, player_id: {}", player_id);
+        //println!("apply_player_input, player_id: {}", player_id);
     }
 }
 

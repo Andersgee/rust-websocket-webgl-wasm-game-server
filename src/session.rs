@@ -188,8 +188,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
                             self.server_addr.do_send(player_input);
                         }
                         Err(_) => {
-                            println!("bad PlayerInputWithoutId json string: {m}");
-                            //ctx.stop();
+                            println!("session, bad player input recieved");
+                            //println!("message: {m}");
+                            ctx.stop();
                         }
                     }
                 }
