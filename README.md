@@ -1,4 +1,4 @@
-# rust-websocket-webgl-game
+# rust-websocket-webgl-wasm-game
 
 ```sh
 cargo run

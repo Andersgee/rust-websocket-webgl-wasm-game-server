@@ -1,6 +1,3 @@
-#start container: sudo docker compose up
-#remove container: sudo docker compose down
-#remove data: sudo docker compose down -v
 version: "3.8"
 
 services:
